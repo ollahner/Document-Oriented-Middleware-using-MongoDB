@@ -172,3 +172,104 @@ Den Demo-Abfragen liegt folgende Datenstruktur zu Grunde:
 `db.productData.find( { 
      productCategory: { $in: [ "Waschmittel", "Getraenk" ] } 
 } )`
+
+## Dokumentation
+
+Wie bei JPA funktioniert Mongodb ähnlich in spring boot, da MongoDB aber die Daten werden als Dokument wie in Json gespeichert. Es gibt auch ein Repository und einen Controller.
+
+## Fragestellungen
+
+
+Nennen Sie 4 Vorteile eines NoSQL Repository im Gegensatz zu einem relationalen DBMS
+
+- Daten können Flexibler gespeichert werden weil kein Schema vorgegeben ist (in Spring haben wir aber quasi eines)
+- Gut horizontal Skalierbar
+- Bessere Performance
+- Komplexe Daten können einfach gespeichert werden
+
+Nennen Sie 4 Nachteile eines NoSQL Repository im Gegensatz zu einem relationalen DBMS
+
+- Keine oder eingeschränkte ACID-Transaktionen
+- Keine standardisierte Abfragesprache
+- Datenredundanz durch fehlende Normalisierung
+- Komplexere Datenkonsistenz bei verteilten Systemen
+
+Welche Schwierigkeiten ergeben sich bei der Zusammenführung der Daten?
+
+- Unterschiedliche Datenformate (JSON-Dokumente statt Tabellen)
+- Fehlende Join-Operationen wie in SQL
+
+
+Welche Arten von NoSQL Datenbanken gibt es?
+
+Nennen Sie einen Vertreter für jede Art?
+
+- Dokumentenorientiert → MongoDB
+- Key-Value Store → Redis
+- Spaltenorientiert → Apache Cassandra
+- Graphdatenbank → Neo4j
+- Beschreiben Sie die Abkürzungen CA, CP und AP in Bezug auf das CAP Theorem
+
+Mit welchem Befehl koennen Sie den Lagerstand eines Produktes aller Lagerstandorte anzeigen.
+
+db.warehouses.aggregate([
+  { $unwind: "$productData" },
+  { $match: { "productData.productId": 1 } },
+  { $group: {
+      _id: "$productData.productId",
+      totalStock: { $sum: "$productData.productQuantity" }
+  }}
+])
+
+Mit welchem Befehl koennen Sie den Lagerstand eines Produktes eines bestimmten Lagerstandortes anzeigen
+
+db.warehouses.aggregate([
+  { $match: { warehouseId: 1 } },
+  { $unwind: "$productData" },
+  { $match: { "productData.productId": 1 } },
+  { $group: {
+      _id: "$productData.productId",
+      stock: { $sum: "$productData.productQuantity" }
+  }}
+])
+
+## Berichtswesen Queries
+Welches Warenhaus hat die größte Gesamtmenge an eingelagerten Produkten?
+
+MongoDB Shell Abfrage
+db.warehouses.aggregate([
+  { $unwind: "$productData" },
+  { $group: {
+      _id: "$warehouseName",
+      totalQuantity: { $sum: "$productData.productQuantity" }
+  }},
+  { $sort: { totalQuantity: -1 } },
+  { $limit: 1 }
+])
+
+Wie viele verschiedene Produkte sind in jedem Lagerstandort vorhanden?
+
+Wie viele unterschiedliche Produkte (productId) hält jedes Warenlager?
+
+MongoDB Shell Abfrage
+db.warehouses.aggregate([
+  { $project: {
+      warehouseName: 1,
+      productCount: { $size: "$productData" }
+  }}
+])
+
+Welche Produktkategorie hat über alle Lager hinweg die größte Gesamtmenge?
+
+MongoDB Shell Abfrage
+´´´
+db.warehouses.aggregate([
+  { $unwind: "$productData" },
+  { $group: {
+      _id: "$productData.productCategory",
+      totalQuantity: { $sum: "$productData.productQuantity" }
+  }},
+  { $sort: { totalQuantity: -1 } },
+  { $limit: 1 }
+])
+´´´
