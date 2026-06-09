@@ -126,52 +126,28 @@ Die Daten werden in der Zentrale in einem MongoDB Repository gespeichert und kö
   - [Introduction to NoSQL Databases on YouTube ](https://www.youtube.com/watch?v=2yQ9TGFpDuM)  
 
 
-## 1.8 Mongo Shell Abfragen  
-  
+## 1.8 Mongo Shell Abfragen (Zusammenfassung & Vertiefung)
+
+### Vertiefung: 3 Fragen für das Berichtswesen
+
+<font size="5">**1. Globaler Bestand eines Produkts**</font>
+*Frage: Wie viel "Produkt 1" haben wir insgesamt über alle Standorte?*
+
+<font size="5">**2. Warnliste: Kritische Bestände**</font>
+*Frage: Welche Produkte haben an welchen Standorten weniger als 50 Stück?*
+
+<font size="5">**3. Analyse pro Kategorie**</font>
+*Frage: In welcher Kategorie haben wir mengenmäßig am meisten Ware gelagert?*
+
+*Eine detaillierte Liste aller Befehle findest du unter: `docs/Mongosh Commands.md`*
+
+---
+
 Link to [Mongo Shell Query and Projection Operators](https://docs.mongodb.com/manual/reference/operator/query/)
 
 Den Demo-Abfragen liegt folgende Datenstruktur zu Grunde:   
-   `{  `  
-   `    warehouseID: '1',   `   
-   `    warehouseName: 'Linz Bahnhof',   `   
-   `   timestamp: '2022-01-02 01:00:00',   `   
-   `    warehousePostalCode: 4010,`    
-   `   warehouseCity: 'Linz',`   
-   `   warehouseCountrz: 'Austria',`   
-   `   productData: [`  
-   `      { productID: '00-443175', productName: 'Bio Orangensaft Sonne', productQuantity: 2500 },`    
-   `      { productID: '00-871895', productName: 'Bio Apfelsaft Gold', productQuantity: 3420 },`    
-   `      { productID: '01-926885', productName: 'Ariel Waschmittel Color', productQuantity: 478 },`     
-   `   ]`   
-    `}`
-  
-* Filtern nach dem Lagerstandort 1    
-`db.productData.find( { 
-	"warehouseID": "1"
-} )`
 
-
-* Filtern nach Lagerstandort 1 und dem Produkt mit dem Namen "Bio Apfelsaft Gold"  
-`db.productData.find( { 
-	"warehouseID": "1",
-        "productName": "Bio Apfelsaft Gold"
-} )`
-
-* Filtern nach allen Produkten, die einen Lagerbestand unter 500 Stueck haben.  
-`db.productData.find( { 
-	"productQuantity": { $lte: 500 }
-} )`
-
-* Filtern nach Lagerstandort 1 und einem Lagerbestand unter 500 Stueck haben.  
-`db.productData.find( { 
-    "warehouseID": "1",
-    "productQuantity": { $lte: 500 }
-} )`
-
-* Filtern nach allen Produkten der Produktkategorien.  
-`db.productData.find( { 
-     productCategory: { $in: [ "Waschmittel", "Getraenk" ] } 
-} )`
+(Siehe `docs/Mongosh Commands.md` für Beispiele)
 
 ## Dokumentation
 
@@ -212,64 +188,11 @@ Nennen Sie einen Vertreter für jede Art?
 
 Mit welchem Befehl koennen Sie den Lagerstand eines Produktes aller Lagerstandorte anzeigen.
 
-db.warehouses.aggregate([
-  { $unwind: "$productData" },
-  { $match: { "productData.productId": 1 } },
-  { $group: {
-      _id: "$productData.productId",
-      totalStock: { $sum: "$productData.productQuantity" }
-  }}
-])
+(Siehe `docs/Mongosh Commands.md`)
 
 Mit welchem Befehl koennen Sie den Lagerstand eines Produktes eines bestimmten Lagerstandortes anzeigen
 
-db.warehouses.aggregate([
-  { $match: { warehouseId: 1 } },
-  { $unwind: "$productData" },
-  { $match: { "productData.productId": 1 } },
-  { $group: {
-      _id: "$productData.productId",
-      stock: { $sum: "$productData.productQuantity" }
-  }}
-])
+(Siehe `docs/Mongosh Commands.md`)
 
 ## Berichtswesen Queries
-Welches Warenhaus hat die größte Gesamtmenge an eingelagerten Produkten?
-
-MongoDB Shell Abfrage
-db.warehouses.aggregate([
-  { $unwind: "$productData" },
-  { $group: {
-      _id: "$warehouseName",
-      totalQuantity: { $sum: "$productData.productQuantity" }
-  }},
-  { $sort: { totalQuantity: -1 } },
-  { $limit: 1 }
-])
-
-Wie viele verschiedene Produkte sind in jedem Lagerstandort vorhanden?
-
-Wie viele unterschiedliche Produkte (productId) hält jedes Warenlager?
-
-MongoDB Shell Abfrage
-db.warehouses.aggregate([
-  { $project: {
-      warehouseName: 1,
-      productCount: { $size: "$productData" }
-  }}
-])
-
-Welche Produktkategorie hat über alle Lager hinweg die größte Gesamtmenge?
-
-MongoDB Shell Abfrage
-´´´
-db.warehouses.aggregate([
-  { $unwind: "$productData" },
-  { $group: {
-      _id: "$productData.productCategory",
-      totalQuantity: { $sum: "$productData.productQuantity" }
-  }},
-  { $sort: { totalQuantity: -1 } },
-  { $limit: 1 }
-])
-´´´
+(Siehe `docs/Mongosh Commands.md`)

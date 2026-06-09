@@ -20,40 +20,50 @@ public class Application {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-    /*
+
 	@Bean
 	CommandLineRunner dataLoader(WarehouseService warehouseService, WarehouseRepository repository) {
 		return args -> {
-			if (repository.count() > 0) {
-				return;
+			repository.deleteAll();
+
+			String[] categories = {"Getraenk", "Reinigung", "Tierfutter", "Garten", "Waschmittel", "Snacks"};
+			List<Warehouse> warehouses = new ArrayList<>();
+
+			// Erstelle 5 Warehouses
+			for (long i = 1; i <= 5; i++) {
+				Warehouse w = new Warehouse(
+						i,
+						"Lager " + i,
+						"100" + i,
+						"Stadt " + i,
+						"Austria",
+						Instant.now(),
+						new ArrayList<>()
+				);
+				warehouses.add(w);
 			}
 
-			List<Product> sampleProducts = new ArrayList<>(List.of(
-					new Product(443175L, "Bio Orangensaft Sonne", "Getraenk", 2500),
-					new Product(871895L, "Bio Apfelsaft Gold", "Getraenk", 3420),
-					new Product(926885L, "Ariel Waschmittel Color", "Waschmittel", 478),
-					new Product(234811L, "Mampfi Katzenfutter Rind", "Tierfutter", 1324),
-					new Product(893173L, "Saugstauberbeutel Ingres", "Reinigung", 7390),
-					new Product(112233L, "Grillkohle Premium", "Garten", 950),
-					new Product(332211L, "Haferdrink Barista", "Getraenk", 1875),
-					new Product(998877L, "Universalreiniger Fresh", "Reinigung", 650),
-					new Product(554433L, "Hundefutter Lamm", "Tierfutter", 890),
-					new Product(776655L, "Waschmittel Sensitiv", "Waschmittel", 520)
-			));
+			// Erstelle 300 Produkte und verteile sie auf die 5 Warehouses
+			for (long i = 1; i <= 300; i++) {
+				String category = categories[(int) (i % categories.length)];
+				Product p = new Product(
+						i,
+						"Produkt " + i,
+						category,
+						(int) (Math.random() * 500) + 10 // Zufällige Menge zwischen 10 und 510
+				);
 
-			Warehouse warehouse = new Warehouse(
-					1L,
-					"Linz Central",
-					"4010",
-					"Linz",
-					"Austria",
-					Instant.now(),
-					sampleProducts
-			);
+				// Reihum einem Warehouse hinzufügen
+				int warehouseIndex = (int) (i % warehouses.size());
+				warehouses.get(warehouseIndex).getProductData().add(p);
+			}
 
-			warehouseService.createWarehouse(warehouse);
+			// Alle Warehouses speichern
+			for (Warehouse w : warehouses) {
+				warehouseService.createWarehouse(w);
+			}
+
+			System.out.println("[DEBUG_LOG] 5 Warehouses mit insgesamt 300 Produkten wurden initialisiert.");
 		};
 	}
-    */
-
 }
